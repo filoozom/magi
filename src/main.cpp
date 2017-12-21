@@ -2837,7 +2837,7 @@ bool CBlock::AcceptBlock()
 
     printf("Block %i BlockTime=%i CurrTime=%i\n", nHeight, GetBlockTime(), GetTime());
     if (IsChainAtSwitchPoint(nHeight) && GetTime() < (GetBlockTime() - 15)) 
-        return DoS(100, error("CheckBlock() : chain switch point reached (wait for 1hr)"));
+        return DoS(100, error("CheckBlock() : chain switch point reached"));
 
     if (IsBlockVersion5(nHeight) && nVersion < 5)
         return DoS(100, error("AcceptBlock() : reject old nVersion = %d", nVersion));
