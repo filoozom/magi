@@ -2834,6 +2834,8 @@ bool CBlock::AcceptBlock()
     int nHeight = pindexPrev->nHeight+1;
 
     // Check proof of work matches claimed amount
+
+    printf("Block %i BlockTime=%i CurrTime=%i\n", nHeight, GetBlockTime(), GetTime());
     if (IsChainAtSwitchPoint(nHeight) && GetTime() < (GetBlockTime() - 15)) 
         return DoS(100, error("CheckBlock() : chain switch point reached (wait for 1hr)"));
 
