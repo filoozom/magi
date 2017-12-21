@@ -333,11 +333,11 @@ Value getblockbynumber(const Array& params, bool fHelp)
 
 unsigned int MagiQuantumWave(const CBlockIndex* pindexLast, bool fProofOfStake);
 unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfStake);
-Value getdebuginfo(const Array& params, bool fHelp)
+Value getchainfo(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "getdebuginfobyheight <height>\n");
+            "getchainfobyheight <height>\n");
 
     int nHeight = params[0].get_int();
     if (nHeight < 1 || nHeight > nBestHeight)
@@ -346,13 +346,28 @@ Value getdebuginfo(const Array& params, bool fHelp)
     Object obj;
 
     const CBlockIndex* pblockindex = FindBlockByHeight(nHeight);
-    obj.push_back(Pair("flags", strprintf("%s", pblockindex->IsProofOfStake()? "proof-of-stake" : "proof-of-work")));
+
     obj.push_back(Pair("height", pblockindex->nHeight));
     obj.push_back(Pair("hash", pblockindex->phashBlock->GetHex()));
+    obj.push_back(Pair("flags(curr)", strprintf("%s", pblockindex->IsProofOfStake()? "proof-of-stake" : "proof-of-work")));
+    obj.push_back(Pair("flags(prev)", strprintf("%s", pblockindex->pprev->IsProofOfStake()? "proof-of-stake" : "proof-of-work")));
+    obj.push_back(Pair("flags(prev-prev)", strprintf("%s", pblockindex->pprev->pprev->IsProofOfStake()? "proof-of-stake" : "proof-of-work")));
+
+    obj.push_back(Pair("blocktime(curr)", DateTimeStrFormat(pblockindex->GetBlockTime()).c_str()));
+    obj.push_back(Pair("blocktime(prev)", DateTimeStrFormat(pblockindex->pprev->GetBlockTime()).c_str()));
+    obj.push_back(Pair("blocktime(prev-prev)", DateTimeStrFormat(pblockindex->pprev->pprev->GetBlockTime()).c_str()));
 
     const CBlockIndex* pblockindexprev = GetLastBlockIndex(pblockindex->pprev, pblockindex->IsProofOfStake());
     obj.push_back(Pair("hashPrev", pblockindexprev->phashBlock->GetHex()));
     obj.push_back(Pair("difficulty", GetDifficulty(pblockindex)));
+
+    /* two PoS blocks must be confirmed in-between PoW blocks */
+    bool fPoWBlockInvalid = IsProofOfWorkBlockInvalid(nHeight, pblockindex->GetBlockTime(), pblockindex->IsProofOfStake(), pblockindex->pprev);
+    /* within five PoS blocks contain at least one PoW block */
+    bool fPoSBlockInvalid = IsProofOfStakeBlockInvalid(nHeight, pblockindex->GetBlockTime(), pblockindex->IsProofOfStake(), pblockindex->pprev);
+
+    obj.push_back(Pair("PoW Block Policy", strprintf("%s", fPoWBlockInvalid? "Invalid" : "Valid")));
+    obj.push_back(Pair("PoS Block Policy", strprintf("%s", fPoSBlockInvalid? "Invalid" : "Valid")));
 
     int bnBitsMQW = MagiQuantumWave(pblockindexprev, pblockindexprev->IsProofOfStake());
     int bnBitsTarget = GetNextTargetRequired(pblockindexprev, pblockindexprev->IsProofOfStake());
