@@ -1262,14 +1262,14 @@ void SetMockTime(int64 nMockTimeIn)
 
 static int64 nTimeOffset = 0;
 
-int64_t GetTimeOffset()
+int64 GetTimeOffset()
 {
     return nTimeOffset;
 }
 
 int64 GetAdjustedTime()
 {
-    return GetTime() + GetTimeOffset();
+    return GetTime() + nTimeOffset;
 }
 
 void AddTimeData(const CNetAddr& ip, int64 nTime)

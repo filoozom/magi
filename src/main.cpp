@@ -2834,10 +2834,9 @@ bool CBlock::AcceptBlock()
     int nHeight = pindexPrev->nHeight+1;
 
     // Check proof of work matches claimed amount
-
-    printf("Block %i BlockTime=%i CurrTime=%i\n", nHeight, GetBlockTime(), GetTime());
+    printf("Block %i BlockTime=%i CurrTime=%i AdjustedTime=%i vtx[0].nTime=%i\n", nHeight, GetBlockTime(), GetTime(), GetAdjustedTime(), (int64)vtx[0].nTime);
     if (IsChainAtSwitchPoint(nHeight) && GetTime() < (GetBlockTime() - 15)) 
-        return DoS(100, error("CheckBlock() : chain switch point reached"));
+        return DoS(100, error("AcceptBlock() : chain switch point reached"));
 
     if (IsBlockVersion5(nHeight) && nVersion < 5)
         return DoS(100, error("AcceptBlock() : reject old nVersion = %d", nVersion));
@@ -4980,8 +4979,20 @@ if (!fTestNet && pindexBest->nHeight < 131100) {
 //        pblock->nPrevMoneySupply = pindexPrev->nMoneySupply;
         if (pblock->IsProofOfStake())
             pblock->nTime      = pblock->vtx[1].nTime; //same as coinstake timestamp
-        pblock->nTime          = max(pindexPrev->GetMedianTimePast()+1, pblock->GetMaxTransactionTime());
+
+        int64 nMaxTransactionTime = pblock->GetMaxTransactionTime();
+        pblock->nTime          = max(pindexPrev->GetMedianTimePast()+1, nMaxTransactionTime);
         pblock->nTime          = max(pblock->GetBlockTime(), PastDrift(pindexPrev->GetBlockTime(), pindexPrev->nHeight+1));
+
+if (fDebug) {
+    printf("New: MedianPast=%i  MaxTransTime=%i  vtx[0]=%i PastDrift=%i  lockTime=%i\n",   
+        pindexPrev->GetMedianTimePast()+1, 
+        nMaxTransactionTime, 
+        (int64)pblock->vtx[0].nTime, 
+        PastDrift(pindexPrev->GetBlockTime(), pindexPrev->nHeight+1), 
+        pblock->GetBlockTime());
+}
+
         if (pblock->IsProofOfWork())
 	{
             pblock->UpdateTime(pindexPrev);
