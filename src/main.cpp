@@ -2834,7 +2834,7 @@ bool CBlock::AcceptBlock()
     int nHeight = pindexPrev->nHeight+1;
 
     // Check proof of work matches claimed amount
-    printf("Block %i BlockTime=%i CurrTime=%i AdjustedTime=%i vtx[0].nTime=%i\n", nHeight, GetBlockTime(), GetTime(), GetAdjustedTime(), (int64)vtx[0].nTime);
+    printf("Block %i BlockTime=%" PRI64d " CurrTime=%" PRI64d " AdjustedTime=%" PRI64d " vtx[0].nTime=%" PRI64d "\n", nHeight, GetBlockTime(), GetTime(), GetAdjustedTime(), (int64)vtx[0].nTime);
     if (IsChainAtSwitchPoint(nHeight) && GetTime() < (GetBlockTime() - 15)) 
         return DoS(100, error("AcceptBlock() : chain switch point reached"));
 
@@ -2858,10 +2858,10 @@ bool CBlock::AcceptBlock()
         return DoS(50, error("AcceptBlock() : coinbase timestamp is too early"));
 
     if (IsProofOfStake() && !CheckCoinStakeTimestamp(GetBlockTime(), (int64)vtx[1].nTime))
-        return DoS(50, error("AcceptBlock() : coinstake timestamp violation nTimeBlock=%d nTimeTx=%u", GetBlockTime(), vtx[1].nTime));
+        return DoS(50, error("AcceptBlock() : coinstake timestamp violation nTimeBlock=%" PRI64d " nTimeTx=%u", GetBlockTime(), vtx[1].nTime));
 
     if (IsProofOfWork() && IsProofOfWorkBlockInvalid(nHeight, GetBlockTime(), IsProofOfStake(), pindexPrev))
-        return DoS(100, error("AcceptBlock() : proof-of-work block violation (prior PoS not seen or wait 10 mins) (height = %d)", nHeight)); 
+        return DoS(100, error("AcceptBlock() : proof-of-work block violation (prior PoS not seen or wait 10 mins) (height = %d)", nHeight));
 
     if (IsProofOfStake() && IsProofOfStakeBlockInvalid(nHeight, GetBlockTime(), IsProofOfStake(), pindexPrev))
         return DoS(100, error("AcceptBlock() : proof-of-stake block violation (prior PoW not seen in the last five blocks or wait 3 mins) (height = %d)", nHeight)); 
@@ -4985,7 +4985,7 @@ if (!fTestNet && pindexBest->nHeight < 131100) {
         pblock->nTime          = max(pblock->GetBlockTime(), PastDrift(pindexPrev->GetBlockTime(), pindexPrev->nHeight+1));
 
 if (fDebug) {
-    printf("New: MedianPast=%i  MaxTransTime=%i  vtx[0]=%i PastDrift=%i  lockTime=%i\n",   
+    printf("New: MedianPast=%" PRI64d "  MaxTransTime=%" PRI64d "  vtx[0]=%" PRI64d " PastDrift=%" PRI64d "  lockTime=%" PRI64d "\n",
         pindexPrev->GetMedianTimePast()+1, 
         nMaxTransactionTime, 
         (int64)pblock->vtx[0].nTime, 
