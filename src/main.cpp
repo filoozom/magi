@@ -5165,6 +5165,9 @@ void MagiMiner(CWallet *pwallet, bool fProofOfStake)
                 }
                 strMintWarning = "";
 		printf("MagiMiner : proof-of-stake block was signed %s\n", pblock->GetHash().ToString().c_str());
+
+                MilliSleep(pblock->GetBlockTime() - FutureDrift(GetAdjustedTime(), pindexPrev->nHeight + 1));
+
                 SetThreadPriority(THREAD_PRIORITY_NORMAL);
                 CheckWork(pblock.get(), *pwalletMain, reservekey);
                 SetThreadPriority(THREAD_PRIORITY_LOWEST);
